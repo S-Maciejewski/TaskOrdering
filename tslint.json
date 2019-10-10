@@ -108,6 +108,7 @@
         "typeof-compare": false,
         "unified-signatures": true,
         "use-isnan": true,
+        "quotemark": [true, "single"],
         "variable-name": {
             "options": ["allow-leading-underscore", "ban-keywords", "check-format", "allow-pascal-case"]
         }

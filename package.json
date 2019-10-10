@@ -8,5 +8,14 @@
     "generate": "ts-node instanceGenerator.ts"
   },
   "author": "",
-  "license": ""
+  "license": "",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "ts-node": "^8.4.1",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.4"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.12"
+  }
 }
