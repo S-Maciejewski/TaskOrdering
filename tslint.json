@@ -96,6 +96,7 @@
         "no-var-keyword": true,
         "no-var-requires": true,
         "object-literal-shorthand": true,
+        "arrow-parens": false,
         "one-variable-per-declaration": { "options": ["ignore-for-loop"] },
         "only-arrow-functions": {
             "options": ["allow-declarations", "allow-named-functions"]
