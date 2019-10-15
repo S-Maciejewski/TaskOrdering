@@ -15,8 +15,8 @@ class Task {
 let tasks: Task[];
 let instanceSize: number;
 
-function loadInstance() {
-    const data = fs.readFileSync('./instance.txt', 'utf-8');
+function loadInstance(fileName: string) {
+    const data = fs.readFileSync(fileName, 'utf-8');
     instanceSize = data.split('\n')[0] as unknown as number;
 
     tasks = data.split('\n').slice(1, data.split('\n').length - 1)
@@ -24,4 +24,4 @@ function loadInstance() {
             .map(val => val as unknown as number)));
 }
 
-loadInstance();
+loadInstance(process.argv.length > 2 ? process.argv[2] : 'instance.txt');

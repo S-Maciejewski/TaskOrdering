@@ -37,6 +37,7 @@
         }
     },
     "rules": {
+        "align": false,
         "adjacent-overload-signatures": true,
         "array-type": {
             "options": ["array"]
