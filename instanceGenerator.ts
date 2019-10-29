@@ -20,7 +20,8 @@ if (process.argv.length > 2) {
         process.argv.length > 3 ? process.argv[3] : 'instance.txt');
 } else {
     for (let i = 50; i <= 500; i += 50) {
-        generateInstance(i, `./instances/instance${i}.txt`);
+        // generateInstance(i, `./instances/instance${i}.txt`);
+        generateInstance(i, `./instances/in132275_${i}.txt`);
     }
 }
 

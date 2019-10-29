@@ -65,7 +65,23 @@ function calculatePenalty() {
         .reduce((a, b) => a + b, 0);
 }
 
+function generateDummySolution(cores: number, fileName: string) {
+    let dummySolution = '0\n';  // Total penalty 0
+    const maxTasks = Math.ceil(tasks.length / cores);
+
+    for (let i = 0, j = tasks.length; i < j; i += maxTasks) {
+        tasks.slice(i, i + maxTasks)
+            .map(obj => dummySolution += `${obj.id} `);
+        dummySolution += '\n';
+    }
+
+    fs.writeFileSync(fileName, dummySolution);
+}
+
 loadInstance(process.argv.length > 2 ? process.argv[2] : 'instance.txt');
+
+generateDummySolution(4, 'solution.txt');
+
 loadSolution(process.argv.length > 3 ? process.argv[3] : 'solution.txt');
 
 console.log('Calculated penalty:', calculatePenalty(), '\nSolution penalty:', totalPenalty);
