@@ -78,12 +78,23 @@ function generateDummySolution(cores: number, fileName: string) {
     fs.writeFileSync(fileName, dummySolution);
 }
 
-loadInstance(process.argv.length > 2 ? process.argv[2] : 'instance.txt');
 
-generateDummySolution(4, 'solution.txt');
+if (process.argv.length > 2) {
+    loadInstance(process.argv[2]);
+    generateDummySolution(4, 'solution.txt');
+    loadSolution(process.argv.length > 3 ? process.argv[3] : 'solution.txt');
+    console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
+        calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
 
-loadSolution(process.argv.length > 3 ? process.argv[3] : 'solution.txt');
+} else {
+    for (let i = 50; i <= 500; i += 50) {
+        loadInstance(`./instances/in132275_${i}.txt`);
+        generateDummySolution(4, `./solutions/solution_${i}.txt`);
+        loadSolution(`./solutions/solution_${i}.txt`);
+        console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
+            calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
+    }
+}
 
-console.log('Calculated penalty:', calculatePenalty(), '\nSolution penalty:', totalPenalty);
 // console.log(tasks);
 // console.log(solution);
