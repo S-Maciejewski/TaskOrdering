@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+// var glob = require("glob");
+import * as glob from 'glob';
 
 class Task {
     public id: number; // Just for ease of handling tasks
@@ -29,8 +31,14 @@ function loadInstance(fileName: string) {
         .map(task => ({ ...task, id: taskID++ }));
 }
 
-function loadSolution(fileName: string) {
-    const data = fs.readFileSync(fileName, 'utf-8');
+function loadSolution(fileName: string, solutionString = '') {
+    let data = '';
+    if (solutionString !== '') {
+        data = solutionString;
+    } else {
+        data = fs.readFileSync(fileName, 'utf-8');
+    }
+
     totalPenalty = data.split('\n')[0] as unknown as number;
 
     solution = data.split('\n').slice(1).map(obj => obj.split(' '))
@@ -65,7 +73,7 @@ function calculatePenalty() {
         .reduce((a, b) => a + b, 0);
 }
 
-function generateDummySolution(cores: number, fileName: string) {
+function generateDummySolution(cores: number, fileName: string, returnString = false) {
     let dummySolution = '0\n';  // Total penalty 0
     const maxTasks = Math.ceil(tasks.length / cores);
 
@@ -75,7 +83,11 @@ function generateDummySolution(cores: number, fileName: string) {
         dummySolution += '\n';
     }
 
-    fs.writeFileSync(fileName, dummySolution);
+    if (returnString) {
+        return dummySolution;
+    } else {
+        fs.writeFileSync(fileName, dummySolution);
+    }
 }
 
 
@@ -97,14 +109,54 @@ function generateDummySolution(cores: number, fileName: string) {
 // }
 
 
-loadInstance('instance.txt');
+// loadInstance('instance.txt');
+// loadSolution('', generateDummySolution(4, 'solution.txt', true));
+// console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
+//     calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
 
-function generateSolution(cores: number, fileName: string) {
-    console.log(
-        tasks.sort((t1, t2) => (t1.p + t1.r) - (t2.p + t2.r))
-    );
 
-}
+glob('./Instancje/*', {}, (er, files) => {
+    console.log(files[0].split());
 
-generateSolution(4, 'solution.txt');
+    // sortedFiles = files.sort()
 
+    // files.forEach(file => {
+        // loadInstance(file);
+        // loadSolution('solution.txt', generateDummySolution(4, 'solution.txt', true));
+        // console.log(file, ',', tasks.length, ',', calculatePenalty());
+    // });
+});
+
+
+// LIST
+
+// loadInstance('instance.txt');
+// function generateSolution(cores: number, fileName: string) {
+//     let sortedTasks = tasks.sort((t1, t2) => (t1.p + t1.r) - (t2.p + t2.r));
+//     let coresTasks = [[], [], [], []];
+//     let d = 0;
+
+//     sortedTasks.map(task => {
+
+//         console.log(task)
+//     });
+
+//     // console.log(sortedTasks);
+
+// }
+
+
+// function assignTask(coresTasks, task) {
+//     for(core in coresTasks) {
+
+//     }
+// }
+
+// function getCoreTime(tasksList) {
+//     tasksList.reduce(task => {
+//         return tasks[task]
+//     }, 0)
+
+// }
+
+// generateSolution(4, 'solution.txt');
