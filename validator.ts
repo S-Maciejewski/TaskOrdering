@@ -79,22 +79,32 @@ function generateDummySolution(cores: number, fileName: string) {
 }
 
 
-if (process.argv.length > 2) {
-    loadInstance(process.argv[2]);
-    generateDummySolution(4, 'solution.txt');
-    loadSolution(process.argv.length > 3 ? process.argv[3] : 'solution.txt');
-    console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
-        calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
+// if (process.argv.length > 2) {
+//     loadInstance(process.argv[2]);
+//     generateDummySolution(4, 'solution.txt');
+//     loadSolution(process.argv.length > 3 ? process.argv[3] : 'solution.txt');
+//     console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
+//         calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
 
-} else {
-    for (let i = 50; i <= 500; i += 50) {
-        loadInstance(`./instances/in132275_${i}.txt`);
-        generateDummySolution(4, `./solutions/solution_${i}.txt`);
-        loadSolution(`./solutions/solution_${i}.txt`);
-        console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
-            calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
-    }
+// } else {
+//     for (let i = 50; i <= 500; i += 50) {
+//         loadInstance(`./instances/in132275_${i}.txt`);
+//         generateDummySolution(4, `./solutions/solution_${i}.txt`);
+//         loadSolution(`./solutions/solution_${i}.txt`);
+//         console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
+//             calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
+//     }
+// }
+
+
+loadInstance('instance.txt');
+
+function generateSolution(cores: number, fileName: string) {
+    console.log(
+        tasks.sort((t1, t2) => (t1.p + t1.r) - (t2.p + t2.r))
+    );
+
 }
 
-// console.log(tasks);
-// console.log(solution);
+generateSolution(4, 'solution.txt');
+

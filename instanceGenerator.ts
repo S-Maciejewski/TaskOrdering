@@ -1,12 +1,12 @@
 import * as fs from 'fs';
 
 function generateInstance(size: number, fileName: string, timeRange = 10,
-    buffer = 8, CPUs = 4) {
+    CPUs = 4) {
     let instance = `${size}\n`;
+    const buffer = Math.floor(0.4 * timeRange);
 
     for (let i = 0; i < size; i++) {
         const p = Math.floor(Math.random() * timeRange) + 1;
-        // const r = Math.floor((Math.random()) * timeRange / CPUs * i);
         const r = Math.floor((Math.random()) * timeRange / CPUs + i / CPUs);
         const d = r + p + Math.floor(Math.random() * buffer) + 1;
         instance += `${p} ${r} ${d}\n`;
@@ -20,7 +20,6 @@ if (process.argv.length > 2) {
         process.argv.length > 3 ? process.argv[3] : 'instance.txt');
 } else {
     for (let i = 50; i <= 500; i += 50) {
-        // generateInstance(i, `./instances/instance${i}.txt`);
         generateInstance(i, `./instances/in132275_${i}.txt`);
     }
 }
