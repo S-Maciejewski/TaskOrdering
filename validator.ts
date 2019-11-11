@@ -14,21 +14,23 @@ class Task {
         this.d = args[2];
     }
 }
-
-let tasks: Task[];
-let instanceSize: number;
-let solution: any;
+// Penalty from solution file
 let totalPenalty: number;
+
+function getInstanceSize(fileName: string) {
+    const data = fs.readFileSync(fileName, 'utf-8');
+    return data.split('\n')[0] as unknown as number;
+}
 
 function loadInstance(fileName: string) {
     const data = fs.readFileSync(fileName, 'utf-8');
-    instanceSize = data.split('\n')[0] as unknown as number;
     let taskID = 1;
-
+    let tasks: Task[] = [];
     tasks = data.split('\n').slice(1, data.split('\n').length - 1)
         .map(row => new Task(...row.split(' ')
             .map(val => val as unknown as number * 1)))
         .map(task => ({ ...task, id: taskID++ }));
+    return tasks;
 }
 
 function loadSolution(fileName: string, solutionString = '') {
@@ -41,7 +43,7 @@ function loadSolution(fileName: string, solutionString = '') {
 
     totalPenalty = data.split('\n')[0] as unknown as number;
 
-    solution = data.split('\n').slice(1).map(obj => obj.split(' '))
+    return data.split('\n').slice(1).map(obj => obj.split(' '))
         .map(coreTasks => coreTasks.filter(val => val !== '')
             .map(val => val as unknown as number * 1));
 }
@@ -60,20 +62,19 @@ function getCorePenalty(coreTasks: Task[]) {
         if (time > task.d) {
             penalty += time - task.d;
         }
-        // Debug
-        // console.log('\nTask:', task, '\n\tTime:', time, '\n\tPenalty:', penalty);
     });
     return penalty;
 }
 
-function calculatePenalty() {
+function calculatePenalty(tasks: Task[], solution: any) {
     return solution
         .map(core =>
             getCorePenalty(tasks.filter(task => core.includes(task.id))))
         .reduce((a, b) => a + b, 0);
 }
 
-function generateDummySolution(cores: number, fileName: string, returnString = false) {
+function generateDummySolution(tasks: Task[], cores: number,
+    fileName = 'dummySolution.txt', returnString = false) {
     let dummySolution = '0\n';  // Total penalty 0
     const maxTasks = Math.ceil(tasks.length / cores);
 
@@ -90,43 +91,28 @@ function generateDummySolution(cores: number, fileName: string, returnString = f
     }
 }
 
-
-// if (process.argv.length > 2) {
-//     loadInstance(process.argv[2]);
-//     generateDummySolution(4, 'solution.txt');
-//     loadSolution(process.argv.length > 3 ? process.argv[3] : 'solution.txt');
-//     console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
-//         calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
-
-// } else {
-//     for (let i = 50; i <= 500; i += 50) {
-//         loadInstance(`./instances/in132275_${i}.txt`);
-//         generateDummySolution(4, `./solutions/solution_${i}.txt`);
-//         loadSolution(`./solutions/solution_${i}.txt`);
-//         console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
-//             calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
-//     }
-// }
-
-
-// loadInstance('instance.txt');
-// loadSolution('', generateDummySolution(4, 'solution.txt', true));
-// console.log('Instance size:', tasks.length, '\n\tCalculated penalty:',
-//     calculatePenalty(), '\n\tSolution penalty:', totalPenalty);
-
-
 glob('./Instancje/*', {}, (er, files) => {
-    console.log(files[0].split());
+    files = files.sort((x, y) => {
+        const xIndex = + x.substring(x.indexOf('in') + 2, x.indexOf('_'));
+        const yIndex = + y.substring(y.indexOf('in') + 2, y.indexOf('_'));
+        const xSize = + x.substring(x.indexOf('_') + 1, x.indexOf('.txt'));
+        const ySize = + y.substring(y.indexOf('_') + 1, y.indexOf('.txt'));
+        if (xIndex === yIndex) {
+            return xSize > ySize ? 1 : -1;
+        } else {
+            return xIndex > yIndex ? 1 : -1;
+        }
+    });
 
-    // sortedFiles = files.sort()
-
-    // files.forEach(file => {
-        // loadInstance(file);
-        // loadSolution('solution.txt', generateDummySolution(4, 'solution.txt', true));
-        // console.log(file, ',', tasks.length, ',', calculatePenalty());
-    // });
+    let result = 'index,size,penalty\n';
+    files.forEach(file => {
+        const tasks = loadInstance(file);
+        const solution = loadSolution('solution.txt', generateDummySolution(tasks, 4, 'solution.txt', true));
+        result += file.substring(file.indexOf('in') + 2, file.indexOf('_'))
+            + ',' + tasks.length + ',' + calculatePenalty(tasks, solution) + '\n';
+    });
+    fs.writeFileSync('penalties.csv', result);
 });
-
 
 // LIST
 
