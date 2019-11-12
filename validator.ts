@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-// var glob = require("glob");
 import * as glob from 'glob';
 
 export class Task {
@@ -23,7 +22,10 @@ function getInstanceSize(fileName: string) {
 }
 
 export function loadInstance(fileName: string) {
-    const data = fs.readFileSync(fileName, 'utf-8');
+    let data = fs.readFileSync(fileName, 'utf-8');
+    if (data[data.length -1] !== '\n') {
+        data += '\n' 
+    }
     let taskID = 1;
     let tasks: Task[] = [];
     tasks = data.split('\n').slice(1, data.split('\n').length - 1)

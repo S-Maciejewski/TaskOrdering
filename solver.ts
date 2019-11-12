@@ -1,5 +1,6 @@
-import { Task } from './validator';
+import { Task, loadInstance } from './validator';
 
+const tasks: Task[] = loadInstance('instance.txt');
 // loadInstance('instance.txt');
 // function generateSolution(cores: number, fileName: string) {
 //     let sortedTasks = tasks.sort((t1, t2) => (t1.p + t1.r) - (t2.p + t2.r));
