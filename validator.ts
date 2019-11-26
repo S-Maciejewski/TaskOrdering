@@ -93,6 +93,7 @@ function generateDummySolution(tasks: Task[], cores: number,
     }
 }
 
+// TODO: Sortowanie indeksów wg. klucza z excela
 glob('./Instancje/*', {}, (er, files) => {
     files = files.sort((x, y) => {
         const xIndex = + x.substring(x.indexOf('in') + 2, x.indexOf('_'));
