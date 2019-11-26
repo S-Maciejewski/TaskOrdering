@@ -2,14 +2,21 @@ import * as fs from 'fs';
 import { Task, loadInstance } from './main';
 
 // TODO: Pomiar czasu w mikrosekundach
-function generateListSolution(tasks: Task[], cores: number, returnPenalty = false,
+export function generateListSolution(tasks: Task[], cores: number, returnPenalty = false,
     returnTime = false, returnSolution = false) {
-    const sortedTasks = tasks.sort((t1, t2) => t1.p > t2.p ? 1 : -1);
     let penalty = 0;
     let coreArray = [];
     for (let i = 0; i < cores; i++) {
         coreArray.push({ id: i, time: 0, tasks: [] });
     }
+
+    const sortedTasks = tasks.sort((t1, t2) => {
+        if (t1.d === t2.d) {
+            return t1.p < t2.p ? 1 : -1;
+        } else {
+            return t1.d > t2.d ? 1 : -1;
+        }
+    });
 
     sortedTasks.forEach(task => {
         coreArray = coreArray.sort((c1, c2) => c1.time > c2.time ? 1 : -1);
@@ -19,7 +26,6 @@ function generateListSolution(tasks: Task[], cores: number, returnPenalty = fals
         }
 
         if (coreArray[0].time + task.p > task.d) {
-            // console.log('Penalty, (task, core time)', task, coreArray[0].time);
             penalty += coreArray[0].time + task.p - task.d;
         }
 
@@ -44,7 +50,6 @@ function getListPenalty(file: string): string {
     const tasks = loadInstance(file);
     return file.substring(file.indexOf('in') + 2, file.indexOf('_'))
         + ',' + tasks.length + ',' + generateListSolution(tasks, 4, true) + '\n';
-
 }
 
 export function calculateListPenalties(files: string[]): void {
