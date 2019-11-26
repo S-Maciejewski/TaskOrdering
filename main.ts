@@ -2,6 +2,9 @@ import * as fs from 'fs';
 import * as glob from 'glob';
 import { validateInstances } from './validator';
 
+const indexes = [132290, 132324, 132289, 132234, 132311, 132235, 132275, 132332,
+    132202, 132205, 132217, 132250, 132322, 132212, 116753, 132264, 132078];
+
 export class Task {
     public id: number; // Just for ease of handling tasks
     public p: number;  // Time to complete
@@ -17,7 +20,7 @@ export class Task {
 
 export function loadInstance(fileName: string) {
     let data = fs.readFileSync(fileName, 'utf-8');
-    if (data[data.length -1] !== '\n') {
+    if (data[data.length - 1] !== '\n') {
         data += '\n';
     }
     let taskID = 1;
@@ -39,7 +42,7 @@ glob('./Instancje/*', {}, (er, files) => {
         if (xIndex === yIndex) {
             return xSize > ySize ? 1 : -1;
         } else {
-            return xIndex > yIndex ? 1 : -1;
+            return indexes.indexOf(xIndex) > indexes.indexOf(yIndex) ? 1 : -1;
         }
     });
 
