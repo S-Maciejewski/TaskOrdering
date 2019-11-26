@@ -1,41 +1,11 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
+import { Task, loadInstance } from './main';
 
-export class Task {
-    public id: number; // Just for ease of handling tasks
-    public p: number;  // Time to complete
-    public r: number;  // Ready
-    public d: number;  // Deadline
-
-    constructor(...args: number[]) {
-        this.p = args[0];
-        this.r = args[1];
-        this.d = args[2];
-    }
-}
-// Penalty from solution file
+// Solution penalty
 let totalPenalty: number;
 
-function getInstanceSize(fileName: string) {
-    const data = fs.readFileSync(fileName, 'utf-8');
-    return data.split('\n')[0] as unknown as number;
-}
-
-export function loadInstance(fileName: string) {
-    let data = fs.readFileSync(fileName, 'utf-8');
-    if (data[data.length -1] !== '\n') {
-        data += '\n' 
-    }
-    let taskID = 1;
-    let tasks: Task[] = [];
-    tasks = data.split('\n').slice(1, data.split('\n').length - 1)
-        .map(row => new Task(...row.split(' ')
-            .map(val => val as unknown as number * 1)))
-        .map(task => ({ ...task, id: taskID++ }));
-    return tasks;
-}
-
-function loadSolution(fileName: string, solutionString = '') {
+function loadSolution(fileName: string, solutionString = ''): number[][] {
     let data = '';
     if (solutionString !== '') {
         data = solutionString;
@@ -50,7 +20,7 @@ function loadSolution(fileName: string, solutionString = '') {
             .map(val => val as unknown as number * 1));
 }
 
-function getCorePenalty(coreTasks: Task[]) {
+function getCorePenalty(coreTasks: Task[]): number {
     let time = 0;
     let penalty = 0;
 
@@ -68,7 +38,7 @@ function getCorePenalty(coreTasks: Task[]) {
     return penalty;
 }
 
-function calculatePenalty(tasks: Task[], solution: any) {
+function calculatePenalty(tasks: Task[], solution: any): number {
     return solution
         .map(core =>
             getCorePenalty(tasks.filter(task => core.includes(task.id))))
@@ -93,26 +63,20 @@ function generateDummySolution(tasks: Task[], cores: number,
     }
 }
 
-// TODO: Sortowanie indeksów wg. klucza z excela
-glob('./Instancje/*', {}, (er, files) => {
-    files = files.sort((x, y) => {
-        const xIndex = + x.substring(x.indexOf('in') + 2, x.indexOf('_'));
-        const yIndex = + y.substring(y.indexOf('in') + 2, y.indexOf('_'));
-        const xSize = + x.substring(x.indexOf('_') + 1, x.indexOf('.txt'));
-        const ySize = + y.substring(y.indexOf('_') + 1, y.indexOf('.txt'));
-        if (xIndex === yIndex) {
-            return xSize > ySize ? 1 : -1;
-        } else {
-            return xIndex > yIndex ? 1 : -1;
-        }
-    });
+// Validate instance using dummy solution
+function validateInstance(file: string): string {
+    const tasks = loadInstance(file);
+    const solution = loadSolution('solution.txt', generateDummySolution(tasks, 4, 'solution.txt', true));
+    return file.substring(file.indexOf('in') + 2, file.indexOf('_'))
+        + ',' + tasks.length + ',' + calculatePenalty(tasks, solution) + '\n';
+}
 
+
+export function validateInstances(files: string[]): void {
     let result = 'index,size,penalty\n';
     files.forEach(file => {
-        const tasks = loadInstance(file);
-        const solution = loadSolution('solution.txt', generateDummySolution(tasks, 4, 'solution.txt', true));
-        result += file.substring(file.indexOf('in') + 2, file.indexOf('_'))
-            + ',' + tasks.length + ',' + calculatePenalty(tasks, solution) + '\n';
+        result += validateInstance(file);
     });
+    console.log('Dummy solution penalties saved in penalties.csv');
     fs.writeFileSync('penalties.csv', result);
-});
+}

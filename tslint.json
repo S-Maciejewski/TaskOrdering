@@ -38,7 +38,7 @@
     },
     "rules": {
         "align": false,
-        "ordered-imports": false,,
+        "ordered-imports": false,
         "adjacent-overload-signatures": true,
         "array-type": {
             "options": ["array"]
