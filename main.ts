@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
 import { validateInstances } from './validator';
+import { calculateListPenalties } from './solver';
 
 const indexes = [132290, 132324, 132289, 132234, 132311, 132235, 132275, 132332,
     132202, 132205, 132217, 132250, 132322, 132212, 116753, 132264, 132078];
@@ -32,7 +33,6 @@ export function loadInstance(fileName: string) {
     return tasks;
 }
 
-// TODO: Sortowanie indeksów wg. klucza z excela
 glob('./Instancje/*', {}, (er, files) => {
     files = files.sort((x, y) => {
         const xIndex = + x.substring(x.indexOf('in') + 2, x.indexOf('_'));
@@ -45,6 +45,13 @@ glob('./Instancje/*', {}, (er, files) => {
             return indexes.indexOf(xIndex) > indexes.indexOf(yIndex) ? 1 : -1;
         }
     });
+    // Command line arguments
+    if (process.argv.includes('-v')) {
+        validateInstances(files);
+    }
 
-    validateInstances(files);
+    if (process.argv.includes('-lk')) {
+        calculateListPenalties(files);
+    }
+
 });

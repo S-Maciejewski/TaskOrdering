@@ -4,8 +4,9 @@
   "description": "",
   "main": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "generate": "ts-node instanceGenerator.ts"
+    "generate": "ts-node instanceGenerator.ts",
+    "validate": "ts-node main.ts -v",
+    "list": "ts-node main.ts -lk"
   },
   "author": "",
   "license": "",
