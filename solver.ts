@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import { Task, loadInstance } from './main';
 
-// TODO: Pomiar czasu w mikrosekundach
 export function generateListSolution(tasks: Task[], cores: number, returnPenalty = false,
     returnTime = false, returnSolution = false) {
     let penalty = 0;
@@ -10,6 +9,7 @@ export function generateListSolution(tasks: Task[], cores: number, returnPenalty
         coreArray.push({ id: i, time: 0, tasks: [] });
     }
 
+    const startTime = process.hrtime.bigint();
     const sortedTasks = tasks.sort((t1, t2) => {
         if (t1.d === t2.d) {
             return t1.p < t2.p ? 1 : -1;
@@ -36,7 +36,7 @@ export function generateListSolution(tasks: Task[], cores: number, returnPenalty
     if (returnPenalty) {
         return penalty;
     } else if (returnTime) {
-        return 0; // TODO: Time counter
+        return (process.hrtime.bigint() - startTime) / BigInt(1000);
     } else if (returnSolution) {
         let solution = penalty + '\n';
         coreArray.forEach(core => {
@@ -52,6 +52,12 @@ function getListPenalty(file: string): string {
         + ',' + tasks.length + ',' + generateListSolution(tasks, 4, true) + '\n';
 }
 
+function getListTime(file: string): string {
+    const tasks = loadInstance(file);
+    return file.substring(file.indexOf('in') + 2, file.indexOf('_'))
+        + ',' + tasks.length + ',' + generateListSolution(tasks, 4, false, true) + '\n';
+}
+
 export function calculateListPenalties(files: string[]): void {
     let result = 'index,size,penalty\n';
     files.forEach(file => {
@@ -59,4 +65,13 @@ export function calculateListPenalties(files: string[]): void {
     });
     console.log('List algorithm solution penalties saved in penalties.csv');
     fs.writeFileSync('penalties.csv', result);
+}
+
+export function calculateListTimes(files: string[]): void {
+    let result = 'index,size,time\n';
+    files.forEach(file => {
+        result += getListTime(file);
+    });
+    console.log('List algorithm execution times saved in times.csv');
+    fs.writeFileSync('times.csv', result);
 }
