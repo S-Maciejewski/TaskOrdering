@@ -58,6 +58,11 @@ function getListTime(file: string): string {
         + ',' + tasks.length + ',' + generateListSolution(tasks, 4, false, true) + '\n';
 }
 
+function getListSolution(file: string) {
+    const tasks = loadInstance(file);
+    return generateListSolution(tasks, 4, false, false, true);
+}
+
 export function calculateListPenalties(files: string[]): void {
     let result = 'index,size,penalty\n';
     files.forEach(file => {
@@ -74,4 +79,13 @@ export function calculateListTimes(files: string[]): void {
     });
     console.log('List algorithm execution times saved in times.csv');
     fs.writeFileSync('times.csv', result);
+}
+
+export function saveListSolutions(files: string[]): void {
+    files.forEach(file => {
+        fs.writeFileSync('./solutions/out132275_' +
+            file.substring(file.indexOf('_') + 1, file.indexOf('.txt')) + '.txt',
+            getListSolution(file));
+    });
+    console.log('List algorithm solutions saved in ./solutions');
 }

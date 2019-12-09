@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
 import { validateInstances } from './validator';
-import { calculateListPenalties, generateListSolution, calculateListTimes } from './solver';
+import { calculateListPenalties, saveListSolutions, calculateListTimes } from './solver';
 
 const indexes = [132290, 132324, 132289, 132234, 132311, 132235, 132275, 132332,
     132202, 132205, 132217, 132250, 132322, 132212, 116753, 132264, 132078];
@@ -56,6 +56,11 @@ glob('./Instancje/*', {}, (er, files) => {
 
     if (process.argv.includes('-lt')) {
         calculateListTimes(files);
+    }
+
+    if (process.argv.includes('-ls')) {
+        const myInstances = files.filter(x => x.includes('132275'));
+        saveListSolutions(myInstances);
     }
 });
 // console.log(generateListSolution(loadInstance('instance.txt'), 4, false, false, true));
