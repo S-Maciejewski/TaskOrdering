@@ -4,19 +4,21 @@ import { Task, loadInstance } from './main';
 // Solution penalty
 let totalPenalty: number;
 
-function loadSolution(fileName: string, solutionString = ''): number[][] {
+function loadSolution(fileName: string, solutionString = '') {
     let data = '';
     if (solutionString !== '') {
         data = solutionString;
     } else {
         data = fs.readFileSync(fileName, 'utf-8');
+        if (data[data.length - 1] !== '\n') {
+            data += '\n';
+        }
     }
 
     totalPenalty = data.split('\n')[0] as unknown as number;
 
-    return data.split('\n').slice(1).map(obj => obj.split(' '))
-        .map(coreTasks => coreTasks.filter(val => val !== '')
-            .map(val => val as unknown as number * 1));
+    return data.split('\n').slice(1).map(obj => obj.split(' ')).filter(list => list.length > 1)
+        .map(coreTasks => coreTasks.map(id => id as unknown as number * 1))
 }
 
 function getCorePenalty(coreTasks: Task[]): number {
@@ -78,4 +80,14 @@ export function validateInstances(files: string[]): void {
     });
     console.log('Dummy solution penalties saved in penalties.csv');
     fs.writeFileSync('penalties.csv', result);
+}
+
+
+export function validateSolution(instanceFile: string, solutionFile: string) {
+    let solution = loadSolution(solutionFile);
+    let tasks = loadInstance(instanceFile);
+    console.log('tasks:\n', tasks);
+    console.log('solution:\n', solution);
+
+    console.log('solution penalty:', totalPenalty, 'calculated penalty:', calculatePenalty(tasks, solution));
 }

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
-import { validateInstances } from './validator';
-import { calculateListPenalties, saveListSolutions, calculateListTimes } from './solver';
+import { validateInstances, validateSolution } from './validator';
+import { calculateListPenalties, saveListSolutions, calculateListTimes, safeTestListSolution } from './solver';
 
 const indexes = [132290, 132324, 132289, 132234, 132311, 132235, 132275, 132332,
     132202, 132205, 132217, 132250, 132322, 132212, 116753, 132264, 132078];
@@ -46,21 +46,34 @@ glob('./Instancje/*', {}, (er, files) => {
         }
     });
     // Command line arguments
-    if (process.argv.includes('-v')) {
+    // Validate instances - generate dummy solution
+    if (process.argv.includes('-vi')) {
         validateInstances(files);
     }
 
+    // Calculate penalties for list algorithm solution
     if (process.argv.includes('-lk')) {
         calculateListPenalties(files);
     }
 
+    // Calculate execution time of list algorithm
     if (process.argv.includes('-lt')) {
         calculateListTimes(files);
     }
 
+    // Generate list algorithm solutions for my instances (save in ./solutions)
     if (process.argv.includes('-ls')) {
         const myInstances = files.filter(x => x.includes('132275'));
         saveListSolutions(myInstances);
     }
+
+    // Generate test list algorithm solution for given instance file
+    if (process.argv.includes('-tls')) {
+        safeTestListSolution('instance.txt');
+    }
+
+    // Check if solution's given penalty equals it's actual penalty
+    if (process.argv.includes('-vs')) {
+        validateSolution('instance.txt', 'solution.txt');
+    }
 });
-// console.log(generateListSolution(loadInstance('instance.txt'), 4, false, false, true));

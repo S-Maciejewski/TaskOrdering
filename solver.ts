@@ -40,7 +40,8 @@ export function generateListSolution(tasks: Task[], cores: number, returnPenalty
     } else if (returnSolution) {
         let solution = penalty + '\n';
         coreArray.forEach(core => {
-            solution += core.tasks.map(task => task.id) + '\n';
+            // Return as string, task ids separated with spaces
+            solution += core.tasks.map(task => task.id).reduce((agg, taskID) => agg += ' ' + taskID) + '\n';
         });
         return solution;
     }
@@ -75,6 +76,8 @@ export function calculateListPenalties(files: string[]): void {
 export function calculateListTimes(files: string[]): void {
     let result = 'index,size,time\n';
     files.forEach(file => {
+        // Prior execution to reduce measured execution times
+        getListTime(file);
         result += getListTime(file);
     });
     console.log('List algorithm execution times saved in times.csv');
@@ -88,4 +91,9 @@ export function saveListSolutions(files: string[]): void {
             getListSolution(file));
     });
     console.log('List algorithm solutions saved in ./solutions');
+}
+
+export function safeTestListSolution(file) {
+    fs.writeFileSync('solution.txt', getListSolution(file));
+    console.log('Test list solution saved in solution.txt file');
 }
