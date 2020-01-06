@@ -42,7 +42,7 @@ function getCorePenalty(coreTasks: Task[]): number {
 function calculatePenalty(tasks: Task[], solution: any): number {
     return solution
         .map(core =>
-            getCorePenalty(tasks.filter(task => core.includes(task.id))))
+            getCorePenalty(core.map(taskID => tasks.filter(task => task.id === taskID)[0])))
         .reduce((a, b) => a + b, 0);
 }
 
@@ -84,10 +84,9 @@ export function validateInstances(files: string[]): void {
 
 
 export function validateSolution(instanceFile: string, solutionFile: string) {
-    let solution = loadSolution(solutionFile);
-    let tasks = loadInstance(instanceFile);
+    const solution = loadSolution(solutionFile);
+    const tasks = loadInstance(instanceFile);
     console.log('tasks:\n', tasks);
     console.log('solution:\n', solution);
-
     console.log('solution penalty:', totalPenalty, 'calculated penalty:', calculatePenalty(tasks, solution));
 }
