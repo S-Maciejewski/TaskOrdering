@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
 import { validateInstances, validateSolution } from './validator';
-import { calculateListPenalties, saveListSolutions, calculateListTimes, safeTestListSolution } from './solver';
+import { calculateListPenalties, saveListSolutions, calculateListTimes, safeTestListSolution, getSolution } from './solver';
 
 const indexes = [132290, 132324, 132289, 132234, 132311, 132235, 132275, 132332,
     132202, 132205, 132217, 132250, 132322, 132212, 116753, 132264, 132078];
@@ -75,5 +75,9 @@ glob('./Instancje/*', {}, (er, files) => {
     // Check if solution's given penalty equals it's actual penalty
     if (process.argv.includes('-vs')) {
         validateSolution('instance.txt', 'solution.txt');
+    }
+
+    if (process.argv.includes('-s')) {
+        getSolution('instance.txt');
     }
 });

@@ -46,6 +46,12 @@ function calculatePenalty(tasks: Task[], solution: any): number {
         .reduce((a, b) => a + b, 0);
 }
 
+export function calculateCoresPenalty(coreArray) {
+    console.log(coreArray[0].tasks.length)
+    return coreArray.map(core =>
+        getCorePenalty(core.tasks)).reduce((a, b) => a + b, 0);
+}
+
 function generateDummySolution(tasks: Task[], cores: number,
     fileName = 'dummySolution.txt', returnString = false) {
     let dummySolution = '0\n';  // Total penalty 0

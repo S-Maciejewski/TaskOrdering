@@ -105,7 +105,7 @@
             "options": ["allow-declarations", "allow-named-functions"]
         },
         "prefer-const": true,
-        "prefer-for-of": true,
+        "prefer-for-of": false,
         "radix": true,
         "triple-equals": { "options": ["allow-null-check"] },
         "typedef": false,

@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { Task, loadInstance } from './main';
+import { calculateCoresPenalty } from './validator';
 
 export function generateListSolution(tasks: Task[], cores: number, returnPenalty = false,
     returnTime = false, returnSolution = false) {
@@ -96,4 +97,75 @@ export function saveListSolutions(files: string[]): void {
 export function safeTestListSolution(file) {
     fs.writeFileSync('solution.txt', getListSolution(file));
     console.log('Test list solution saved in solution.txt file');
+}
+
+export function getSolution(file: string) {
+    const tasks = loadInstance(file);
+    return generateSolution(tasks, 4);
+}
+
+
+
+function getPermutations(tasks) {
+    const ret = [];
+    for (let i = 0; i < tasks.length; i = i + 1) {
+        const rest = getPermutations(tasks.slice(0, i).concat(tasks.slice(i + 1)));
+        if (!rest.length) {
+            ret.push([tasks[i]]);
+        } else {
+            for (let j = 0; j < rest.length; j = j + 1) {
+                ret.push([tasks[i]].concat(rest[j]));
+            }
+        }
+    }
+    return ret;
+}
+
+function clearCoreArray(coreArray) {
+    let res = [];
+
+    for (let i = 0; i < coreArray.length; i++) {
+        res.push({ id: i, time: 0, tasks: coreArray[i].tasks.slice(0, coreArray[i].tasks.length - 1) });
+    }
+
+    return res;
+}
+
+function generateSolution(tasks: Task[], cores: number) {
+    let penalty = 0;
+    let coreArray = [];
+    for (let i = 0; i < cores; i++) {
+        coreArray.push({ id: i, time: 0, tasks: [] });
+    }
+
+    const startTime = process.hrtime.bigint();
+    const sortedTasks = tasks.sort((t1, t2) => {
+        if (t1.d === t2.d) {
+            return t1.p < t2.p ? 1 : -1;
+        } else {
+            return t1.d > t2.d ? 1 : -1;
+        }
+    });
+
+    for (let i = 0; i < sortedTasks.length / 4; i++) {
+        let tasks = [];
+        for (let j = 0; j < 4; j++) {
+            tasks.push(sortedTasks.shift());
+        }
+
+        let permutations = getPermutations(tasks);
+
+        let bestPermutation = permutations[0];
+
+        let currentCoreArray = coreArray;
+        permutations.forEach(perm => {
+            currentCoreArray = clearCoreArray(currentCoreArray);
+            for (let k = 0; k < perm.length; k++) {
+                currentCoreArray[k].tasks.push(perm[k]);
+            }
+            console.log('penalty', i++, calculateCoresPenalty(currentCoreArray), perm.map(t => t.id));
+            // console.log(currentCoreArray.map(core => core.tasks))
+        });
+
+    }
 }
