@@ -132,7 +132,6 @@ function clearCoreArray(coreArray) {
 }
 
 function generateSolution(tasks: Task[], cores: number) {
-    let penalty = 0;
     let coreArray = [];
     for (let i = 0; i < cores; i++) {
         coreArray.push({ id: i, time: 0, tasks: [] });
@@ -147,23 +146,29 @@ function generateSolution(tasks: Task[], cores: number) {
         }
     });
 
+    let penalty = 0;
+
     for (let i = 0; i < sortedTasks.length / 4; i++) {
         let tasks = [];
         for (let j = 0; j < 4; j++) {
             tasks.push(sortedTasks.shift());
         }
 
-        let permutations = getPermutations(tasks);
-
-        let bestPermutation = permutations[0];
+        let permutationsList = getPermutations(tasks);
+        let bestPermutation = permutationsList[0];
+        let bestPenalty = Math.pow(2, 30);
 
         let currentCoreArray = coreArray;
-        permutations.forEach(perm => {
+        let currentPenalty = 0;
+
+        permutationsList.forEach(permutation => {
             currentCoreArray = clearCoreArray(currentCoreArray);
-            for (let k = 0; k < perm.length; k++) {
-                currentCoreArray[k].tasks.push(perm[k]);
+            for (let k = 0; k < permutation.length; k++) {
+                currentCoreArray[k].tasks.push(permutation[k]);
             }
-            console.log('penalty', i++, calculateCoresPenalty(currentCoreArray), perm.map(t => t.id));
+            currentPenalty = calculateCoresPenalty(currentCoreArray);
+
+            console.log('penalty', i++, calculateCoresPenalty(currentCoreArray), permutation.map(t => t.id));
             // console.log(currentCoreArray.map(core => core.tasks))
         });
 
