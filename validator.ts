@@ -47,7 +47,6 @@ function calculatePenalty(tasks: Task[], solution: any): number {
 }
 
 export function calculateCoresPenalty(coreArray) {
-    console.log(coreArray[0].tasks.length)
     return coreArray.map(core =>
         getCorePenalty(core.tasks)).reduce((a, b) => a + b, 0);
 }

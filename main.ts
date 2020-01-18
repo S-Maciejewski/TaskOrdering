@@ -47,13 +47,17 @@ glob('./Instancje/*', {}, (er, files) => {
     });
     // Command line arguments
     // Validate instances - generate dummy solution
+
+    getSolution('instance.txt');
+
     if (process.argv.includes('-vi')) {
         validateInstances(files);
     }
 
     // Calculate penalties for list algorithm solution
     if (process.argv.includes('-lk')) {
-        calculateListPenalties(files);
+        // calculateListPenalties(files);
+        calculateListPenalties(['instance.txt']);
     }
 
     // Calculate execution time of list algorithm
