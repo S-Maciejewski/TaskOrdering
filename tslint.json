@@ -100,7 +100,8 @@
         "no-var-requires": true,
         "object-literal-shorthand": true,
         "arrow-parens": false,
-        "one-variable-per-declaration": { "options": ["ignore-for-loop"] },
+        "max-line-length": false,
+        "one-variable-per-declaration": false,
         "only-arrow-functions": {
             "options": ["allow-declarations", "allow-named-functions"]
         },

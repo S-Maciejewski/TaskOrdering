@@ -137,7 +137,44 @@ function addPermutationToCoreArray(coreArray, permutation) {
     return res;
 }
 
+function coreArrayToIDs(coreArray) {
+    return coreArray.map(core => core.tasks.map(task => task.id));
+}
+
+// function IDsToCoreArray()
+
+function mutateCoreArray(tasks: Task[], coreArray) {
+    let gene1, gene2;
+    const childArray = coreArray;
+
+    do {    // Math.ceil, bo taski mają id 1..n
+        gene1 = Math.ceil(Math.random() * tasks.length);
+        gene2 = Math.ceil(Math.random() * tasks.length);
+    } while (gene1 === gene2);
+
+    childArray.forEach(core => {
+        let genes = core.tasks.map(task => task.id);
+        if (genes.includes(gene1) && genes.includes(gene2)) {
+            // TODO?
+            return;
+        } else if (genes.includes(gene1)) {
+            // console.log('gene1', gene1, 'found in', genes, 'swapping with gene2', gene2);
+            genes = core.tasks[genes.indexOf(gene1)] = tasks[tasks.map(task => task.id).indexOf(gene2)];
+            genes = core.tasks.map(task => task.id);
+            // console.log(genes);
+        } else if (genes.includes(gene2)) {
+            // console.log('gene2', gene2, 'found in', genes, 'swapping with gene1', gene1);
+            genes = core.tasks[genes.indexOf(gene2)] = tasks[tasks.map(task => task.id).indexOf(gene1)];
+            genes = core.tasks.map(task => task.id);
+            // console.log(genes);
+        }
+    });
+
+    return childArray;
+}
+
 function generateSolution(tasks: Task[], cores: number) {
+    // Alg. listowy
     let coreArray = [];
     for (let i = 0; i < cores; i++) {
         coreArray.push({ id: i, time: 0, tasks: [] });
@@ -152,70 +189,26 @@ function generateSolution(tasks: Task[], cores: number) {
         }
     });
 
-    const instanceSize = tasks.length;
-    // let penalty = 0;
-    // for (let i = 0; i < instanceSize / cores; i++) {
-    for (let i = 0; i < 4; i++) {
+    sortedTasks.forEach(task => {
+        coreArray = coreArray.sort((c1, c2) => c1.time > c2.time ? 1 : -1);
 
-        // 4 taski z początku listy posortowanych tasków
-        const iterationTasks = [];
-        for (let j = 0; j < 4; j++) {
-            iterationTasks.push(sortedTasks.shift());
+        if (coreArray[0].time < task.r) {
+            coreArray[0].time = task.r;
         }
-        // console.log(i, iterationTasks)
 
-        // 4! permutacji tych tasków
-        const permutationsList = getPermutations(iterationTasks);
+        coreArray[0].time += task.p;
+        coreArray[0].tasks.push(task);
+    });
+    console.log('List solution core array:', coreArray.map(core => core.tasks.map(task => task.id)), '\n penalty:', calculateCoresPenalty(coreArray));
 
-        // najlepszy wynik
-        let bestPermutation = permutationsList[0];
-        let bestPenalty = Math.pow(2, 30);
-
-        // aktualny stan procesora
-        let currentCoreArray = coreArray;
-        let currentPenalty = 0;
-
-        console.log('\n\n\n\ntesting permutations, core array:', coreArray.map(core => core.tasks.map(task => task.id)))
-        // dla każdej permutacji sprawdź jaką ma karę, zapisz najmniejszą z nich jako bestPermutation
-        permutationsList.forEach(permutation => {
-            // console.log('checking permutation:', permutation.map(x => x.id))
-            currentCoreArray = restoreCleanCoreArray(coreArray);
-            console.log('current core array cleared:', currentCoreArray.map(core => core.tasks.map(task => task.id)))
-
-            // zastosuj permutację do aktualnego stanu
-            currentCoreArray = addPermutationToCoreArray(currentCoreArray, permutation);
-            currentPenalty = calculateCoresPenalty(currentCoreArray);
-
-            // currentCoreArray.forEach(core => {
-                // console.log('\nid:', core.id, '\ntasks:\n', core.tasks.map(task => task.id),
-                    // 'penalty =', calculateCoresPenalty(currentCoreArray));
-            // });
-
-            if (currentPenalty < bestPenalty) {
-                console.log('\n found new best permutation', permutation.map(x => x.id), 'penalty:', currentPenalty);
-                console.log('   previous best permutation', bestPermutation.map(x => x.id), 'previous penalty:', bestPenalty, '\n');
-
-                bestPermutation = permutation;
-                bestPenalty = currentPenalty;
-            }
-            // console.log('penalty', calculateCoresPenalty(currentCoreArray),
-                // '@ iteration', i, 'permutation:', permutation.map(t => t.id));
-
-            console.log('core array + permutation:', currentCoreArray.map(core => core.tasks.map(task => task.id)), '\npenalty:', calculateCoresPenalty(currentCoreArray))
-        });
-
-        // console.log('Best permutation:', bestPermutation, 'penalty:', penalty);
-        // console.log('\n\nfound best permutation:', bestPermutation)
-        coreArray = addPermutationToCoreArray(coreArray, bestPermutation);
-
-        // console.log(`core array's tasks @${i} iteration: ${coreArray.map(core => core.tasks)}, penalty: ${calculateCoresPenalty(coreArray)}`);
-        // coreArray.forEach(core => {
-            // console.log('\nid:', core.id, '\ntasks:\n', core.tasks,
-                // '@ iteration', i, ', penalty =', calculateCoresPenalty(coreArray));
-        // });
+    let penalty = calculateCoresPenalty(coreArray);
+    for (let i = 0; i < 1000; i++) {
+        const child = mutateCoreArray(tasks, coreArray);
+        if (calculateCoresPenalty(child) < penalty) {
+            penalty = calculateCoresPenalty(child);
+            coreArray = child;
+        }
     }
-    // coreArray.forEach(core => {
-    // console.log('\nid:', core.id, '\ntasks:\n', core.tasks, '\n');
-    // });
-    console.log('Total penalty:', calculateCoresPenalty(coreArray));
+
+    console.log('Post-mutation penalty:', penalty);
 }
