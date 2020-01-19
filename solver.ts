@@ -168,6 +168,47 @@ function mutateCoreArray(tasks: Task[], coreArray) {
     return childArray;
 }
 
+function nearMutation(tasks: Task[], coreArray) {
+    let gene1;
+    const range = 2;
+    const childArray = restoreCleanCoreArray(coreArray);
+
+    let genesArray = childArray.map(core => core.tasks.map(task => task.id));
+    // console.log(genesArray);
+
+    gene1 = Math.ceil(Math.random() * tasks.length);
+    const corePos = genesArray.findIndex(x => x.includes(gene1));
+    const taskPos = genesArray[corePos].indexOf(gene1);
+    // console.log('gene1 (', gene1, ') position (core, task):', corePos, taskPos);
+
+    let newCorePos, newTaskPos;
+    newCorePos = Math.floor(Math.random() * coreArray.length);
+
+    // if (newCorePos !== corePos)
+
+    if (taskPos + range > genesArray[corePos].length - 1) {
+        newTaskPos = taskPos - Math.ceil(Math.random() * range);
+    } else if (taskPos - range < 0) {
+        newTaskPos = taskPos + Math.ceil(Math.random() * range);
+    } else {
+        if (Math.random() > 0.5) {
+            newTaskPos = taskPos + Math.ceil(Math.random() * range);
+        } else {
+            newTaskPos = taskPos - Math.ceil(Math.random() * range);
+        }
+    }
+
+    // console.log('gene2 (', coreArray[newCorePos].tasks[newTaskPos].id, ') position (core, task):', newCorePos, newTaskPos);
+
+    childArray[corePos].tasks[taskPos] = coreArray[newCorePos].tasks[newTaskPos];
+    childArray[newCorePos].tasks[newTaskPos] = coreArray[corePos].tasks[taskPos];
+
+    // genesArray = childArray.map(core => core.tasks.map(task => task.id));
+    // console.log(genesArray);
+
+    return childArray;
+}
+
 function generateSolution(tasks: Task[], cores: number) {
     // Alg. listowy
     let coreArray = [];
@@ -201,16 +242,22 @@ function generateSolution(tasks: Task[], cores: number) {
     // Limit czasu: n * 100 mikrosekund
     const timeLimit = 100 * tasks.length;
 
+    // const child = nearMutation(tasks, coreArray)
+
+
     let penalty = calculateCoresPenalty(coreArray);
-    let generations = 0;
-    for (generations = 0; (process.hrtime.bigint() - startTime) / BigInt(1000) < timeLimit; generations++) {
-        const child = mutateCoreArray(tasks, coreArray);
+    let mutations = 0, improvements = 0;
+    for (mutations = 0; (process.hrtime.bigint() - startTime) / BigInt(1000) < timeLimit; mutations++) {
+        // const child = mutateCoreArray(tasks, coreArray);
+        const child = nearMutation(tasks, coreArray);
+        console.log(child)
         if (calculateCoresPenalty(child) < penalty) {
             penalty = calculateCoresPenalty(child);
             coreArray = child;
+            improvements++;
         }
     }
 
-    console.log('Post-mutation penalty:', penalty, 'took:', (process.hrtime.bigint() - startTime) / BigInt(1000), 'after', generations, 'generations');
+    console.log('Post-mutation penalty:', penalty, 'took:', (process.hrtime.bigint() - startTime) / BigInt(1000), 'after', mutations, 'mutations. Improved generations:', improvements);
     console.log('Improvement:', (1 - penalty / listSolutionPenalty) * 100, '%');
 }
