@@ -95,31 +95,58 @@ export function saveListSolutions(files: string[]): void {
     console.log('List algorithm solutions saved in ./solutions');
 }
 
-export function safeTestListSolution(file) {
+export function saveTestListSolution(file) {
     fs.writeFileSync('solution.txt', getListSolution(file));
     console.log('Test list solution saved in solution.txt file');
 }
 
-export function getSolution(file: string) {
+
+// Genetic algorithm
+
+function getGeneticPenalty(file: string): string {
     const tasks = loadInstance(file);
-    return generateSolution(tasks, 4);
+    return file.substring(file.indexOf('in') + 2, file.indexOf('_'))
+        + ',' + tasks.length + ',' + generateSolution(tasks, 4, true) + '\n';
 }
 
+function getGeneticTime(file: string): string {
+    const tasks = loadInstance(file);
+    return file.substring(file.indexOf('in') + 2, file.indexOf('_'))
+        + ',' + tasks.length + ',' + generateSolution(tasks, 4, false, true) + '\n';
+}
 
+export function getGeneticSolution(file: string) {
+    const tasks = loadInstance(file);
+    return generateSolution(tasks, 4, false, false, true);
+}
 
-function getPermutations(tasks) {
-    const ret = [];
-    for (let i = 0; i < tasks.length; i = i + 1) {
-        const rest = getPermutations(tasks.slice(0, i).concat(tasks.slice(i + 1)));
-        if (!rest.length) {
-            ret.push([tasks[i]]);
-        } else {
-            for (let j = 0; j < rest.length; j = j + 1) {
-                ret.push([tasks[i]].concat(rest[j]));
-            }
-        }
-    }
-    return ret;
+export function saveGeneticSolutions(files: string[]): void {
+    files.forEach(file => {
+        fs.writeFileSync('./solutions/out132275_' +
+            file.substring(file.indexOf('_') + 1, file.indexOf('.txt')) + '.txt',
+            getGeneticSolution(file));
+    });
+    console.log('Genetic algorithm solutions saved in ./solutions');
+}
+
+export function calculateGeneticPenalties(files: string[]): void {
+    let result = 'index,size,penalty\n';
+    files.forEach(file => {
+        result += getGeneticPenalty(file);
+    });
+    console.log('Genetic algorithm solution penalties saved in penalties.csv');
+    fs.writeFileSync('penalties.csv', result);
+}
+
+export function calculateGeneticTimes(files: string[]): void {
+    let result = 'index,size,time\n';
+    files.forEach(file => {
+        // Prior execution to reduce measured execution times
+        getGeneticTime(file);
+        result += getGeneticTime(file);
+    });
+    console.log('Genetic algorithm execution times saved in times.csv');
+    fs.writeFileSync('times.csv', result);
 }
 
 function restoreCleanCoreArray(coreArray) {
@@ -128,44 +155,6 @@ function restoreCleanCoreArray(coreArray) {
         res.push({ id: i, time: 0, tasks: coreArray[i].tasks.slice(0, coreArray[i].tasks.length) });
     }
     return res;
-}
-
-function addPermutationToCoreArray(coreArray, permutation) {
-    const res = coreArray;
-    for (let i = 0; i < permutation.length; i++) {
-        res[i].tasks.push(permutation[i]);
-    }
-    return res;
-}
-
-function mutateCoreArray(tasks: Task[], coreArray) {
-    let gene1, gene2;
-    const childArray = coreArray;
-
-    do {    // Math.ceil, bo taski mają id 1..n
-        gene1 = Math.ceil(Math.random() * tasks.length);
-        gene2 = Math.ceil(Math.random() * tasks.length);
-    } while (gene1 === gene2);
-
-    childArray.forEach(core => {
-        let genes = core.tasks.map(task => task.id);
-        if (genes.includes(gene1) && genes.includes(gene2)) {
-            // TODO?
-            return;
-        } else if (genes.includes(gene1)) {
-            // console.log('gene1', gene1, 'found in', genes, 'swapping with gene2', gene2);
-            genes = core.tasks[genes.indexOf(gene1)] = tasks[tasks.map(task => task.id).indexOf(gene2)];
-            genes = core.tasks.map(task => task.id);
-            // console.log(genes);
-        } else if (genes.includes(gene2)) {
-            // console.log('gene2', gene2, 'found in', genes, 'swapping with gene1', gene1);
-            genes = core.tasks[genes.indexOf(gene2)] = tasks[tasks.map(task => task.id).indexOf(gene1)];
-            genes = core.tasks.map(task => task.id);
-            // console.log(genes);
-        }
-    });
-
-    return childArray;
 }
 
 function nearMutation(tasks: Task[], coreArray) {
@@ -226,7 +215,7 @@ function generateSolution(tasks: Task[], cores: number, returnPenalty = false,
     });
 
     const listSolutionPenalty = calculateCoresPenalty(coreArray);
-    console.log('List solution penalty:', listSolutionPenalty, 'time:', (process.hrtime.bigint() - startTime) / BigInt(1000));
+    // console.log('List solution penalty:', listSolutionPenalty, 'time:', (process.hrtime.bigint() - startTime) / BigInt(1000));
     // timeLimit: n * 100 microseconds
     const timeLimit = 100 * tasks.length;
 

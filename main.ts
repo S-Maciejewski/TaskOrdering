@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
 import { validateInstances, validateSolution } from './validator';
-import { calculateListPenalties, saveListSolutions, calculateListTimes, safeTestListSolution, getSolution } from './solver';
+import { calculateListPenalties, saveListSolutions, calculateListTimes, saveTestListSolution, getGeneticSolution, calculateGeneticPenalties, calculateGeneticTimes, saveGeneticSolutions } from './solver';
 
 const indexes = [132290, 132324, 132289, 132234, 132311, 132235, 132275, 132332,
     132202, 132205, 132217, 132250, 132322, 132212, 116753, 132264, 132078];
@@ -54,8 +54,7 @@ glob('./Instancje/*', {}, (er, files) => {
 
     // Calculate penalties for list algorithm solution
     if (process.argv.includes('-lk')) {
-        // calculateListPenalties(files);
-        calculateListPenalties(['instance.txt']);
+        calculateListPenalties(files);
     }
 
     // Calculate execution time of list algorithm
@@ -71,7 +70,7 @@ glob('./Instancje/*', {}, (er, files) => {
 
     // Generate test list algorithm solution for given instance file
     if (process.argv.includes('-tls')) {
-        safeTestListSolution('instance.txt');
+        saveTestListSolution('instance.txt');
     }
 
     // Check if solution's given penalty equals it's actual penalty
@@ -80,6 +79,19 @@ glob('./Instancje/*', {}, (er, files) => {
     }
 
     if (process.argv.includes('-s')) {
-        getSolution('instance.txt');
+        getGeneticSolution('instance.txt');
+    }
+
+    if (process.argv.includes('-gk')) {
+        calculateGeneticPenalties(files);
+    }
+
+    if (process.argv.includes('-gt')) {
+        calculateGeneticTimes(files);
+    }
+
+    if (process.argv.includes('-gs')) {
+        const myInstances = files.filter(x => x.includes('132275'));
+        saveGeneticSolutions(myInstances);
     }
 });
