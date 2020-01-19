@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as micSec from 'microseconds';
 import { Task, loadInstance } from './main';
 import { calculateCoresPenalty } from './validator';
 
@@ -137,12 +138,6 @@ function addPermutationToCoreArray(coreArray, permutation) {
     return res;
 }
 
-function coreArrayToIDs(coreArray) {
-    return coreArray.map(core => core.tasks.map(task => task.id));
-}
-
-// function IDsToCoreArray()
-
 function mutateCoreArray(tasks: Task[], coreArray) {
     let gene1, gene2;
     const childArray = coreArray;
@@ -181,6 +176,7 @@ function generateSolution(tasks: Task[], cores: number) {
     }
 
     const startTime = process.hrtime.bigint();
+    // const startTime = micSec.now();
     const sortedTasks = tasks.sort((t1, t2) => {
         if (t1.d === t2.d) {
             return t1.p < t2.p ? 1 : -1;
@@ -199,10 +195,15 @@ function generateSolution(tasks: Task[], cores: number) {
         coreArray[0].time += task.p;
         coreArray[0].tasks.push(task);
     });
-    console.log('List solution core array:', coreArray.map(core => core.tasks.map(task => task.id)), '\n penalty:', calculateCoresPenalty(coreArray));
+
+    const listSolutionPenalty = calculateCoresPenalty(coreArray);
+    console.log('List solution penalty:', listSolutionPenalty, 'time:', (process.hrtime.bigint() - startTime) / BigInt(1000));
+    // Limit czasu: n * 100 mikrosekund
+    const timeLimit = 100 * tasks.length;
 
     let penalty = calculateCoresPenalty(coreArray);
-    for (let i = 0; i < 1000; i++) {
+    let generations = 0;
+    for (generations = 0; (process.hrtime.bigint() - startTime) / BigInt(1000) < timeLimit; generations++) {
         const child = mutateCoreArray(tasks, coreArray);
         if (calculateCoresPenalty(child) < penalty) {
             penalty = calculateCoresPenalty(child);
@@ -210,5 +211,6 @@ function generateSolution(tasks: Task[], cores: number) {
         }
     }
 
-    console.log('Post-mutation penalty:', penalty);
+    console.log('Post-mutation penalty:', penalty, 'took:', (process.hrtime.bigint() - startTime) / BigInt(1000), 'after', generations, 'generations');
+    console.log('Improvement:', (1 - penalty / listSolutionPenalty) * 100, '%');
 }

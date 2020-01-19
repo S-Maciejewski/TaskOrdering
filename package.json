@@ -12,6 +12,7 @@
   "license": "",
   "dependencies": {
     "fs": "0.0.1-security",
+    "microseconds": "^0.2.0",
     "ts-node": "^8.4.1",
     "tslint": "^5.20.0",
     "typescript": "^3.6.4"
