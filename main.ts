@@ -48,8 +48,6 @@ glob('./Instancje/*', {}, (er, files) => {
     // Command line arguments
     // Validate instances - generate dummy solution
 
-    getSolution('instance.txt');
-
     if (process.argv.includes('-vi')) {
         validateInstances(files);
     }
