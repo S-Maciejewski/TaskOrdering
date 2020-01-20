@@ -103,50 +103,39 @@ export function saveTestListSolution(file) {
 
 // Genetic algorithm
 
-function getGeneticPenalty(file: string): string {
+function getGeneticOutcome(file: string) {
     const tasks = loadInstance(file);
-    return file.substring(file.indexOf('in') + 2, file.indexOf('_'))
-        + ',' + tasks.length + ',' + generateSolution(tasks, 4, true) + '\n';
+    return generateSolution(tasks, 4);
 }
 
-function getGeneticTime(file: string): string {
-    const tasks = loadInstance(file);
-    return file.substring(file.indexOf('in') + 2, file.indexOf('_'))
-        + ',' + tasks.length + ',' + generateSolution(tasks, 4, false, true) + '\n';
-}
-
-export function getGeneticSolution(file: string) {
-    const tasks = loadInstance(file);
-    return generateSolution(tasks, 4, false, false, true);
-}
-
-export function saveGeneticSolutions(files: string[]): void {
-    files.forEach(file => {
-        fs.writeFileSync('./solutions/out132275_' +
-            file.substring(file.indexOf('_') + 1, file.indexOf('.txt')) + '.txt',
-            getGeneticSolution(file));
-    });
-    console.log('Genetic algorithm solutions saved in ./solutions');
-}
-
-export function calculateGeneticPenalties(files: string[]): void {
+export function calculateGeneticOutcome(files: string[], saveSolutions = false): void {
     let result = 'index,size,penalty\n';
-    files.forEach(file => {
-        result += getGeneticPenalty(file);
-    });
-    console.log('Genetic algorithm solution penalties saved in penalties.csv');
-    fs.writeFileSync('penalties.csv', result);
-}
+    let resultTime = 'index,size,time\n';
 
-export function calculateGeneticTimes(files: string[]): void {
-    let result = 'index,size,time\n';
+    if (saveSolutions) {
+        files = files.filter(x => x.includes('132275'));
+    }
+
     files.forEach(file => {
-        // Prior execution to reduce measured execution times
-        getGeneticTime(file);
-        result += getGeneticTime(file);
+        const size = loadInstance(file).length;
+        const res = getGeneticOutcome(file);
+
+        if (saveSolutions) {
+            console.log('Genetic algorithm solution for size', size, 'saved in ./solutions');
+
+            fs.writeFileSync('./solutions/out132275_' +
+                file.substring(file.indexOf('_') + 1, file.indexOf('.txt')) + '.txt',
+                res.solution);
+        }
+        result += file.substring(file.indexOf('in') + 2, file.indexOf('_'))
+            + ',' + size + ',' + res.penalty + '\n';
+        resultTime += file.substring(file.indexOf('in') + 2, file.indexOf('_'))
+            + ',' + size + ',' + res.time + '\n';
     });
+    fs.writeFileSync('penalties.csv', result);
+    console.log('Genetic algorithm solution penalties saved in penalties.csv');
+    fs.writeFileSync('times.csv', resultTime);
     console.log('Genetic algorithm execution times saved in times.csv');
-    fs.writeFileSync('times.csv', result);
 }
 
 function restoreCleanCoreArray(coreArray) {
@@ -185,8 +174,7 @@ function nearMutation(tasks: Task[], coreArray) {
     return childArray;
 }
 
-function generateSolution(tasks: Task[], cores: number, returnPenalty = false,
-    returnTime = false, returnSolution = false) {
+function generateSolution(tasks: Task[], cores: number) {
     // Alg. listowy
     let coreArray = [];
     for (let i = 0; i < cores; i++) {
@@ -217,7 +205,7 @@ function generateSolution(tasks: Task[], cores: number, returnPenalty = false,
     const listSolutionPenalty = calculateCoresPenalty(coreArray);
     // console.log('List solution penalty:', listSolutionPenalty, 'time:', (process.hrtime.bigint() - startTime) / BigInt(1000));
     // timeLimit: n * 100 microseconds
-    const timeLimit = 100 * tasks.length;
+    const timeLimit = 100 * 1000 * tasks.length;
 
     let penalty = calculateCoresPenalty(coreArray);
     let mutations = 0, improvements = 0;
@@ -232,18 +220,16 @@ function generateSolution(tasks: Task[], cores: number, returnPenalty = false,
     }
 
     // console.log('Post-mutation penalty:', penalty, 'took:', (process.hrtime.bigint() - startTime) / BigInt(1000), 'after', mutations, 'mutations. Improved generations:', improvements);
-    // console.log('Improvement:', (1 - penalty / listSolutionPenalty) * 100, '%');
 
-    if (returnPenalty) {
-        return penalty;
-    } else if (returnTime) {
-        return (process.hrtime.bigint() - startTime) / BigInt(1000);
-    } else if (returnSolution) {
-        let solution = penalty + '\n';
-        coreArray.forEach(core => {
-            // Return as string, task ids separated with spaces
-            solution += core.tasks.map(task => task.id).reduce((agg, taskID) => agg += ' ' + taskID) + '\n';
-        });
-        return solution;
-    }
+    const time = (process.hrtime.bigint() - startTime) / BigInt(1000);
+    let solution = penalty + '\n';
+    coreArray.forEach(core => {
+        // Return as string, task ids separated with spaces
+        solution += core.tasks.map(task => task.id).reduce((agg, taskID) => agg += ' ' + taskID) + '\n';
+    });
+
+    console.log('Improvement:', (1 - penalty / listSolutionPenalty) * 100, '% - instance size:', tasks.length);
+
+    return { penalty, time, solution };
+
 }
